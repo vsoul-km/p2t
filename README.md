@@ -99,7 +99,7 @@ Console output:
     
     Press any key to exit...
 
-## **Version 1.0.0**
+## **v1.0.0.0**
 
 First release
 
