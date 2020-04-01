@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.NetworkInformation;
 
-namespace p2t
+namespace p2t.Resources.Modules
 {
     class Traceroute
     {

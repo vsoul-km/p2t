@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace p2t
+namespace p2t.Resources.Modules
 {
     class WriteLog
     {

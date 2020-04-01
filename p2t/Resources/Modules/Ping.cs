@@ -3,7 +3,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using p2t.Resources.DataTypes;
 
-namespace p2t
+namespace p2t.Resources.Modules
 {
     class Ping
     {
@@ -14,7 +14,7 @@ namespace p2t
         private static int _pingRttInterval;
         private static bool _dontFragmentFlag;
         private static bool _followTheName;
-        private static WriteLog writeLog = new WriteLog();
+        private static WriteLog _writeLog = new WriteLog();
         public Ping(CommandLineArguments commandLineArguments)
         {
             //init variables
@@ -29,16 +29,16 @@ namespace p2t
         {
             string pingCountText = _pingCount == 0 ? "infinite" : _pingCount.ToString();
 
-            writeLog.Append("");
-            writeLog.Append("Host Name: " + P2T.Variables.HostName);
-            writeLog.Append("IP Address: " + P2T.Variables.Address);
-            writeLog.Append("Packet Size: " + _packetSize + " bytes");
-            writeLog.Append("Ping Count: " + pingCountText);
-            writeLog.Append("Timeout: " + _pingTimeout + " ms");
-            writeLog.Append("Interval: " + _pingRttInterval + " ms");
-            writeLog.Append("Don't Fragment: " + _dontFragmentFlag);
-            writeLog.Append("Follow the Name: " + _followTheName);
-            writeLog.Append("");
+            _writeLog.Append("");
+            _writeLog.Append("Host Name: " + P2T.Variables.HostName);
+            _writeLog.Append("IP Address: " + P2T.Variables.Address);
+            _writeLog.Append("Packet Size: " + _packetSize + " bytes");
+            _writeLog.Append("Ping Count: " + pingCountText);
+            _writeLog.Append("Timeout: " + _pingTimeout + " ms");
+            _writeLog.Append("Interval: " + _pingRttInterval + " ms");
+            _writeLog.Append("Don't Fragment: " + _dontFragmentFlag);
+            _writeLog.Append("Follow the Name: " + _followTheName);
+            _writeLog.Append("");
 
             Console.WriteLine();
             Console.WriteLine("Host Name: " + P2T.Variables.HostName);
@@ -104,7 +104,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(output);
                     Console.ResetColor();
-                    writeLog.Append(output);
+                    _writeLog.Append(output);
 
                     return;
                 }
@@ -116,7 +116,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(output);
                     Console.ResetColor();
-                    writeLog.Append(output);
+                    _writeLog.Append(output);
 
                     P2T.Statistic.TraceRoutes++;
                     Traceroute startTraceroute = new Traceroute();
@@ -164,7 +164,7 @@ namespace p2t
 
                     string output = $"{DateTime.Now:HH:mm:ss.fff}  Reply from: {reply.Address}  fragment={(!_dontFragmentFlag).ToString()}  bytes={_packetSize.ToString()}  time={reply.RoundtripTime.ToString()}ms  TTL={ttl} ";
                     Console.WriteLine(output);
-                    writeLog.Append(output);
+                    _writeLog.Append(output);
                     return;
                 }
 
@@ -173,7 +173,7 @@ namespace p2t
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(textUnknownError);
                 Console.ResetColor();
-                writeLog.Append(textUnknownError);
+                _writeLog.Append(textUnknownError);
             }
             catch (PingException pingException) when (pingException.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.HostNotFound)
             {
@@ -182,19 +182,17 @@ namespace p2t
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(textHostNotFound);
                 Console.ResetColor();
-                writeLog.Append(textHostNotFound);
+                _writeLog.Append(textHostNotFound);
                 System.Threading.Thread.Sleep(_pingTimeout);
             }
-#pragma warning disable 168
             catch (PingException pingException)
-#pragma warning restore 168
             {
                 //Console.WriteLine(pingException.ToString());
-                string textPingException = "Ping module error exception.";
+                string textPingException = "Ping module error exception: " + pingException;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(textPingException);
                 Console.ResetColor();
-                writeLog.Append(textPingException);
+                _writeLog.Append(textPingException);
                 System.Threading.Thread.Sleep(_pingTimeout);
             }
         }

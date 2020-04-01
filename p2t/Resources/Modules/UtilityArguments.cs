@@ -1,7 +1,6 @@
 ﻿//http://dotnetfollower.com/wordpress/2012/03/c-simple-command-line-arguments-parser/
-using p2t.Resources;
 
-namespace p2t
+namespace p2t.Resources.Modules
 {
     public class UtilityArguments : InputArguments
     {

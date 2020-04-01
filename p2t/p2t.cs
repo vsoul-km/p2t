@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
-using p2t.Resources;
 using p2t.Resources.DataTypes;
+using p2t.Resources.Modules;
 
 namespace p2t
 {
@@ -71,7 +71,7 @@ namespace p2t
 
                 while (true)
                 {
-                    Console.Write("Enter the RTT interval in ms (default is 500 ms): ");
+                    Console.Write("Enter the interval between RTT in ms (default is 500 ms): ");
                     string pingInterval = Console.ReadLine();
                     if (string.IsNullOrEmpty(pingInterval)) break;
                     if (int.TryParse(pingInterval, out int result))
@@ -81,7 +81,7 @@ namespace p2t
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Wrong RTT interval.");
+                        Console.WriteLine("Wrong interval between RTT.");
                         Console.ResetColor();
                         continue;
                     }
@@ -261,7 +261,7 @@ namespace p2t
             Console.WriteLine("    -l size   Packet payload size, optional. Default is 32 byte.");
             Console.WriteLine("    -c count  Number of ping echo requests, optional. Default is infinite.");
             Console.WriteLine("    -w ms     Timeout in ms. to wait for each reply, optional. Default is 2000 ms.");
-            Console.WriteLine("    -i ms     Interval between pings RTT in ms, optional. Default is 500 ms.");
+            Console.WriteLine("    -i ms     Interval between RTT in ms, optional. Default is 500 ms.");
             Console.WriteLine("    -f        Do not fragment. The default is false (disabled).");
             Console.WriteLine("    -log      Write output to log file.");
             Console.WriteLine("    -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.");

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 
-namespace p2t.Resources
+namespace p2t.Resources.Modules
 {
     public static class ResolveHostname
     {
