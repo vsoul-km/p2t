@@ -4,41 +4,21 @@ namespace p2t.Resources.Modules
 {
     public class UtilityArguments : InputArguments
     {
-        public bool Log
-        {
-            get { return GetBoolValue("-log"); }
-        }
+        public bool Log => GetBoolValue("-log");
 
-        public bool F
-        {
-            get { return GetBoolValue("-f"); }
-        }
+        public bool F => GetBoolValue("-f");
+        
+        public bool D => GetBoolValue("-d");
 
+        public bool Follow => GetBoolValue("-follow");
 
-        public bool Follow
-        {
-            get { return GetBoolValue("-follow"); }
-        }
+        public string L => GetValue("l");
 
-        public string L
-        {
-            get { return GetValue("l"); }
-        }
+        public string C => GetValue("c");
 
-        public string C
-        {
-            get { return GetValue("c"); }
-        }
+        public string W => GetValue("w");
 
-        public string W
-        {
-            get { return GetValue("w"); }
-        }
-
-        public string I
-        {
-            get { return GetValue("i"); }
-        }
+        public string I => GetValue("i");
 
         public UtilityArguments(string[] args) : base(args)
         {

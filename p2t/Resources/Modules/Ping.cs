@@ -14,6 +14,7 @@ namespace p2t.Resources.Modules
         private static int _pingRttInterval;
         private static bool _dontFragmentFlag;
         private static bool _followTheName;
+        private static bool _addDate;
         private static WriteLog _writeLog = new WriteLog();
         public Ping(CommandLineArguments commandLineArguments)
         {
@@ -24,6 +25,7 @@ namespace p2t.Resources.Modules
             _pingRttInterval = commandLineArguments.PingRttInterval;
             _dontFragmentFlag = commandLineArguments.DoNotFragment;
             _followTheName = commandLineArguments.FollowTheName;
+            _addDate = commandLineArguments.AddDate;
         }
         public void StartPing()
         {
@@ -38,6 +40,7 @@ namespace p2t.Resources.Modules
             _writeLog.Append("Interval: " + _pingRttInterval + " ms");
             _writeLog.Append("Don't Fragment: " + _dontFragmentFlag);
             _writeLog.Append("Follow the Name: " + _followTheName);
+            _writeLog.Append("Add Date to each ping output: " + _addDate);
             _writeLog.Append("");
 
             Console.WriteLine();
@@ -49,6 +52,7 @@ namespace p2t.Resources.Modules
             Console.WriteLine("Interval: " + _pingRttInterval + " ms");
             Console.WriteLine("Don't fragment: " + _dontFragmentFlag);
             Console.WriteLine("Follow the Name: " + _followTheName);
+            Console.WriteLine("Add Date to each ping output: " + _addDate);
             Console.WriteLine();
 
             //start action
@@ -100,7 +104,7 @@ namespace p2t.Resources.Modules
                 if (reply != null && reply.Status == IPStatus.PacketTooBig)
                 {
                     P2T.Statistic.PingLost++;
-                    string output = $"{DateTime.Now:HH:mm:ss.fff} The packet is too big and network does not allow to pass it.";
+                    string output = _addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]" + " The packet is too big and network does not allow to pass it.";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(output);
                     Console.ResetColor();
@@ -112,7 +116,7 @@ namespace p2t.Resources.Modules
                 if (reply != null && reply.Status == IPStatus.TimedOut)
                 {
                     P2T.Statistic.PingLost++;
-                    string output = $"{DateTime.Now:HH:mm:ss.fff} Timeout.";
+                    string output = _addDate ? $"[{DateTime.Now:(dd-MM-yyyy HH:mm:ss.fff)}]" : $"[{DateTime.Now:HH:mm:ss.fff}]" + "Timeout.";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(output);
                     Console.ResetColor();
@@ -162,7 +166,7 @@ namespace p2t.Resources.Modules
                         P2T.Statistic.addIp = reply.Address.ToString();
                     }
 
-                    string output = $"{DateTime.Now:HH:mm:ss.fff}  Reply from: {reply.Address}  fragment={(!_dontFragmentFlag).ToString()}  bytes={_packetSize.ToString()}  time={reply.RoundtripTime.ToString()}ms  TTL={ttl} ";
+                    string output = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Reply from: " + reply.Address + " fragment=" + (!_dontFragmentFlag).ToString() + " bytes=" + _packetSize.ToString() + "  time=" + reply.RoundtripTime.ToString() + "ms  TTL=" + ttl;
                     Console.WriteLine(output);
                     _writeLog.Append(output);
                     return;

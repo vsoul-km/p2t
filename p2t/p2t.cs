@@ -195,6 +195,7 @@ namespace p2t
                 CommandLineArguments.DoNotFragment = arguments.F;
                 CommandLineArguments.FollowTheName = arguments.Follow;
                 CommandLineArguments.LogEnabled = arguments.Log;
+                CommandLineArguments.AddDate = arguments.D;
             }
 
             //validate the address
@@ -263,6 +264,7 @@ namespace p2t
             Console.WriteLine("    -w ms     Timeout in ms. to wait for each reply, optional. Default is 2000 ms.");
             Console.WriteLine("    -i ms     Interval between RTT in ms, optional. Default is 500 ms.");
             Console.WriteLine("    -f        Do not fragment. The default is false (disabled).");
+            Console.WriteLine("    -d        Add date to each ping output.");
             Console.WriteLine("    -log      Write output to log file.");
             Console.WriteLine("    -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.");
             Console.WriteLine("              The name will resolve to the IP address at every ping. The default is false (disabled).");
@@ -272,7 +274,7 @@ namespace p2t
             Console.WriteLine("          p2t.exe 8.8.8.8");
             Console.WriteLine("          p2t.exe www.google.com -log");
             Console.WriteLine("          p2t.exe 8.8.8.8 -l 1500 -c 100 -i 250 -log");
-            Console.WriteLine("          p2t.exe www.google.com -l 1500 -c 100 -i 250 -log -follow");
+            Console.WriteLine("          p2t.exe www.google.com -l 1500 -c 100 -i 250 -log -follow -d");
             Console.WriteLine();
         }
 

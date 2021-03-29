@@ -10,5 +10,6 @@
         public bool DoNotFragment { get; set; } = false;
         public bool LogEnabled { get; set; } = false;
         public bool FollowTheName { get; set; } = false;
+        public bool AddDate { get; set; } = false;
     }
 }
