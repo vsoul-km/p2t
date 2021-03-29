@@ -264,7 +264,7 @@ namespace p2t
             Console.WriteLine("    -w ms     Timeout in ms. to wait for each reply, optional. Default is 2000 ms.");
             Console.WriteLine("    -i ms     Interval between RTT in ms, optional. Default is 500 ms.");
             Console.WriteLine("    -f        Do not fragment. The default is false (disabled).");
-            Console.WriteLine("    -d        Add date to each ping output.");
+            Console.WriteLine("    -d        Add date to each ping output. The default is false (disabled).");
             Console.WriteLine("    -log      Write output to log file.");
             Console.WriteLine("    -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.");
             Console.WriteLine("              The name will resolve to the IP address at every ping. The default is false (disabled).");

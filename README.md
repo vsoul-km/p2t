@@ -14,7 +14,7 @@ Runs in interactive mode if started without arguments.
         -w ms     Timeout in ms. to wait for each reply, optional. Default is 2000 ms.
         -i ms     Interval between pings RTT in ms, optional. Default is 500 ms.
         -f        Do not fragment. The default is false (disabled).
-		-d        Add date to each ping output.
+        -d        Add date to each ping output. The default is false (disabled).
         -log      Write output to log file.
         -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.
                   The name will resolve to the IP address at every ping. The default is false (disabled).
@@ -102,10 +102,16 @@ Console output:
     
     Press any key to exit...
 
+
 ## **v1.0.0.1**
+
+Added -d switch to add date to each ping output
+
+## **v1.0.0.0**
 
 First release
 
 ## Other notes
 
-VS 2019 project.
+VS 2019 solution.
+Could be switched to .NET 2.0 without any issues.
