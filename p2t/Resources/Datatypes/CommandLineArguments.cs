@@ -11,5 +11,10 @@
         public bool LogEnabled { get; set; } = false;
         public bool FollowTheName { get; set; } = false;
         public bool AddDate { get; set; } = false;
+        public bool UsingTelegram { get; set; } = false;
+        public bool TelegramSendAll { get; set; } = false;
+        public bool TelegramSendErrors { get; set; } = true;
+        public string TelegramBotToken { get; set; }
+        public string TelegramChatId { get; set; }
     }
 }

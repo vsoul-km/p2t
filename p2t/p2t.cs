@@ -192,10 +192,65 @@ namespace p2t
                     }
                 }
 
+                if (arguments.T & (string.IsNullOrEmpty(arguments.Tt) || string.IsNullOrEmpty(arguments.Tc)))
+                {
+                    DisplayHelp();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Telegram Bot access token and Telegram Chat ID are not defined! Please define them using -tt and -tc arguments.");
+                    Console.ResetColor();
+                    Environment.Exit(0);
+                }
+
+                if (!string.IsNullOrEmpty(arguments.Tt) & string.IsNullOrEmpty(arguments.Tc))
+                {
+                    DisplayHelp();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Telegram Chat ID is not defined! Please define it using -tc argument.");
+                    Console.ResetColor();
+                    Environment.Exit(0);
+                }
+
+                if (!string.IsNullOrEmpty(arguments.Tc) & string.IsNullOrEmpty(arguments.Tt))
+                {
+                    DisplayHelp();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Telegram Bot access token is not defined! Please define it using -tt argument.");
+                    Console.ResetColor();
+                    Environment.Exit(0);
+                }
+
+                if ((arguments.Ta || arguments.Te) & (string.IsNullOrEmpty(arguments.Tt) || string.IsNullOrEmpty(arguments.Tc)))
+                {
+                    DisplayHelp();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Telegram Bot access token or Telegram Chat ID is not defined! Please define them using -tt and -tc arguments.");
+                    Console.ResetColor();
+                    Environment.Exit(0);
+                }
+                
                 CommandLineArguments.DoNotFragment = arguments.F;
                 CommandLineArguments.FollowTheName = arguments.Follow;
                 CommandLineArguments.LogEnabled = arguments.Log;
                 CommandLineArguments.AddDate = arguments.D;
+
+                if (!string.IsNullOrEmpty(arguments.Tt) & !string.IsNullOrEmpty(arguments.Tc))
+                {
+                    CommandLineArguments.UsingTelegram = true;
+                }
+
+                CommandLineArguments.TelegramBotToken = arguments.Tt;
+                CommandLineArguments.TelegramChatId = arguments.Tc;
+
+                if (arguments.Ta)
+                {
+                    CommandLineArguments.TelegramSendAll = arguments.Ta;
+                    CommandLineArguments.TelegramSendErrors = false;
+                }
+
+                if (arguments.Te)
+                {
+                    CommandLineArguments.TelegramSendErrors = arguments.Te;
+                }
             }
 
             //validate the address
@@ -257,6 +312,11 @@ namespace p2t
 
     private static void DisplayHelp()
         {
+            System.Reflection.Assembly assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly();
+
+            Console.WriteLine("p2t.exe - advanced ping utility.");
+            Console.WriteLine("Version " + assemblyVersion.GetName().Version);
+            Console.WriteLine();
             Console.WriteLine("Usage: p2t.exe ipaddress/name -option1 -option2 -option...");
             Console.WriteLine("options:");
             Console.WriteLine("    -l size   Packet payload size, optional. Default is 32 byte.");
@@ -269,18 +329,28 @@ namespace p2t
             Console.WriteLine("    -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.");
             Console.WriteLine("              The name will resolve to the IP address at every ping. The default is false (disabled).");
             Console.WriteLine("              Only works when using the host name as the address.");
+            Console.WriteLine("    -t        Send output using a Telegram bot. The default is false (disabled).");
+            Console.WriteLine("              To create a bot follow the instruction: https://core.telegram.org/bots#creating-a-new-bot.");
+            Console.WriteLine("              If defined, arguments -tt and -tc should be also defined.");
+            Console.WriteLine("    -tt       Telegram bot access token. If defined, you can omit the -t argument.");
+            Console.WriteLine("              If defined, argument -tc should be also defined.");
+            Console.WriteLine("    -tc       Telegram bot Chat ID.");
+            Console.WriteLine("              To detect Chat ID follow the instruction: https://github.com/vsoul-km/p2t/wiki/Detect-Telegram-Chat-ID.");
+            Console.WriteLine("    -ta       Duplicate all output to Telegram. The default is false (disabled).");
+            Console.WriteLine("    -te       Only send errors to Telegram. The default is true (enabled).");
             Console.WriteLine();
             Console.WriteLine("Examples:");
             Console.WriteLine("          p2t.exe 8.8.8.8");
             Console.WriteLine("          p2t.exe www.google.com -log");
-            Console.WriteLine("          p2t.exe 8.8.8.8 -l 1500 -c 100 -i 250 -log");
-            Console.WriteLine("          p2t.exe www.google.com -l 1500 -c 100 -i 250 -log -follow -d");
+            Console.WriteLine("          p2t.exe 8.8.8.8 -l 1400 -c 100 -i 250 -log");
+            Console.WriteLine("          p2t.exe www.google.com -l 1400 -c 100 -i 2000 -log -follow -d -tt 1032560943:AAG3-S4-v4fOwRpyIr1KggKnQZDobFyCa-A -tc 315147040 -ta");
             Console.WriteLine();
         }
 
         private static void Result()
         {
             WriteLog writeLog = new WriteLog(false);
+            Telegram telegram = new Telegram(CommandLineArguments.TelegramBotToken, CommandLineArguments.TelegramChatId);
 
             Console.WriteLine();
             writeLog.Append("");
@@ -294,6 +364,10 @@ namespace p2t
                     writeLog.Append(textAllLost);
                 }
 
+                if (CommandLineArguments.TelegramSendAll || CommandLineArguments.TelegramSendErrors)
+                {
+                    telegram.SendMessage(textAllLost);
+                }
                 return;
             }
 
@@ -302,6 +376,12 @@ namespace p2t
                 string textTraceroutesOnly = $"Packets: sent - {Statistic.PingLost}; Lost - 100%; Traceroutes: {Statistic.TraceRoutes}; Avg.RTT: -- ms; Unique IP addresses: 0;";
                 Console.WriteLine(textTraceroutesOnly);
                 writeLog.Append(textTraceroutesOnly);
+                
+                if (CommandLineArguments.TelegramSendAll || CommandLineArguments.TelegramSendErrors)
+                {
+                    telegram.SendMessage(textTraceroutesOnly);
+                }
+
                 return;
             }
 
@@ -310,6 +390,12 @@ namespace p2t
                 string textLostOnly = $"Packets: sent - {Statistic.PingLost}, lost - 100%; Traceroutes: 0; Avg.RTT: -- ms; Unique IP addresses: 0;";
                 Console.WriteLine(textLostOnly);
                 writeLog.Append(textLostOnly);
+
+                if (CommandLineArguments.TelegramSendAll || CommandLineArguments.TelegramSendErrors)
+                {
+                    telegram.SendMessage(textLostOnly);
+                }
+
                 return;
             }
 
@@ -317,14 +403,27 @@ namespace p2t
             Console.WriteLine(textOther);
             writeLog.Append(textOther);
 
+            if (CommandLineArguments.TelegramSendAll || CommandLineArguments.TelegramSendErrors)
+            {
+                telegram.SendMessage(textOther);
+            }
+
             if (CommandLineArguments.FollowTheName)
             {
-                Console.WriteLine("Used IP's:");
-                writeLog.Append("Used IP's:");
+                string footerText = "";
+                footerText += "Used IP addresses: ";
+                
                 foreach (string ipAddress in Statistic.GetIp)
                 {
-                    Console.WriteLine("  " + ipAddress);
-                    writeLog.Append("  " + ipAddress);
+                   footerText += ipAddress + " ";
+                }
+
+                Console.WriteLine(footerText);
+                writeLog.Append(footerText);
+
+                if (CommandLineArguments.TelegramSendAll || CommandLineArguments.TelegramSendErrors)
+                {
+                    telegram.SendMessage(footerText);
                 }
             }
         }

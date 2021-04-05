@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>p2t</RootNamespace>
     <AssemblyName>p2t</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -46,6 +48,7 @@
     <Compile Include="Resources\Modules\InputArguments.cs" />
     <Compile Include="Resources\Modules\Ping.cs" />
     <Compile Include="Resources\Modules\ResolveHostname.cs" />
+    <Compile Include="Resources\Modules\Telegram.cs" />
     <Compile Include="Resources\Modules\Traceroute.cs" />
     <Compile Include="Resources\Modules\UtilityArguments.cs" />
     <Compile Include="Resources\Modules\ValidateAddress.cs" />

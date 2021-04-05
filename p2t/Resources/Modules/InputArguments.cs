@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace p2t.Resources
+namespace p2t.Resources.Modules
 {
     public class InputArguments
     {

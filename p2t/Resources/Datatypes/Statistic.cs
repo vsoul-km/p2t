@@ -9,7 +9,7 @@ namespace p2t.Resources.DataTypes
         public int PingLost { get; set; }
         public long RttSumm { get; set; }
         public int TraceRoutes { get; set; }
-        public string addIp
+        public string AddIp
         {
             set
             {
