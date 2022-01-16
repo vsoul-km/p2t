@@ -10,13 +10,13 @@ namespace p2t.Resources.Modules
         {
             if (P2T.CommandLineArguments.LogEnabled)
             {
-                if (!string.IsNullOrEmpty(P2T.Variables.Address))
+                if (!string.IsNullOrEmpty(P2T.GlobalVariables.OriginalAddress))
                 {
-                    _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "p2t_" + P2T.Variables.LogStartTime + "_" + P2T.Variables.Address + ".log");
+                    _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "p2t_" + P2T.GlobalVariables.LogStartTime + "_" + P2T.GlobalVariables.OriginalAddress + ".log");
                 }
                 else
                 {
-                    _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "p2t_" + P2T.Variables.LogStartTime + ".log");
+                    _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "p2t_" + P2T.GlobalVariables.LogStartTime + ".log");
                 }
 
                 try
@@ -30,7 +30,7 @@ namespace p2t.Resources.Modules
                 catch
                 {
                     Console.WriteLine($"Can't write log to file {_logPath}.");
-                    _logPath = Path.Combine(Path.GetTempPath(), "p2t_" + P2T.Variables.LogStartTime + ".log");
+                    _logPath = Path.Combine(Path.GetTempPath(), "p2t_" + P2T.GlobalVariables.LogStartTime + ".log");
                     Console.WriteLine($"Using the following file to log: {_logPath}");
                 }
             }

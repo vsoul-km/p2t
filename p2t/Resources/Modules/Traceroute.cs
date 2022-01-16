@@ -5,10 +5,11 @@ namespace p2t.Resources.Modules
 {
     class Traceroute
     {
-        public void StartTraceroute(int timeout)
+        public static bool Cancel = false;
+        public void StartTraceroute(string ipAddress, int timeout)
         {
             WriteLog writeLog = new WriteLog(false);
-            const int maxTtl = 30;
+            const int maxTtl = 16;
             int timeoutOption = timeout;
             byte[] sizeOption = new byte[32];
             new Random().NextBytes(sizeOption);
@@ -20,8 +21,13 @@ namespace p2t.Resources.Modules
             
             for (int ttl = 1; ttl <= maxTtl; ttl++)
             {
+                if (Cancel)
+                {
+                    break;
+                }
+
                 PingOptions options = new PingOptions(ttl, true);
-                PingReply reply = pingSender.Send(P2T.Variables.Address, timeoutOption, sizeOption, options);
+                PingReply reply = pingSender.Send(ipAddress, timeoutOption, sizeOption, options);
 
                 if (reply != null && reply.Status == IPStatus.TtlExpired)
                 {

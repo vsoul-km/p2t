@@ -14,9 +14,10 @@ namespace p2t
         public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
         // A delegate type to be used as the handler routine for SetConsoleCtrlHandler.
         public delegate bool HandlerRoutine(CtrlTypes ctrlType);
-        public static Variables Variables = new Variables();
+        public static GlobalVariables GlobalVariables = new GlobalVariables();
         public static CommandLineArguments CommandLineArguments = new CommandLineArguments();
         public static Statistic Statistic = new Statistic();
+        private static bool _manualMode;
 
         public enum CtrlTypes
         {
@@ -31,6 +32,7 @@ namespace p2t
         {
             if (args.Length == 0)
             {
+                _manualMode = true;
                 DisplayHelp();
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -54,17 +56,16 @@ namespace p2t
                         continue;
                     }
 
-                    if (!ValidateAddress.Ip(pingAddress))
+                    if (!ValidateAddress.ValidateIp(pingAddress) & !ValidateAddress.ValidateHostName(pingAddress))
                     {
-                        if (!ValidateAddress.HostName(pingAddress))
-                        {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("Cannot resolve the address to IP address.");
                             Console.ResetColor();
                             continue;
-                        }
                     }
 
+                    GlobalVariables.OriginalAddress = pingAddress;
+                    GlobalVariables.Address = pingAddress;
                     CommandLineArguments.Address = pingAddress;
                     break;
                 }
@@ -90,7 +91,31 @@ namespace p2t
 
                 while (true)
                 {
-                    Console.Write("Do you want to log ping to file (y/n)?: ");
+                    Console.Write("Enable trace route on ping fails? (y/n)?: ");
+                    string enableTrace = Console.ReadLine();
+                    if (enableTrace != "y" && enableTrace != "n") continue;
+                    if (enableTrace == "n")
+                    {
+                        CommandLineArguments.NoTrace = true;
+                    }
+                    break;
+                }
+
+                while (true)
+                {
+                    Console.Write("Follow the name? (y/n)?: ");
+                    string enablFollowTheName = Console.ReadLine();
+                    if (enablFollowTheName != "y" && enablFollowTheName != "n") continue;
+                    if (enablFollowTheName == "y")
+                    {
+                        CommandLineArguments.FollowTheName = true;
+                    }
+                    break;
+                }
+
+                while (true)
+                {
+                    Console.Write("Do you want to log output to file (y/n)?: ");
                     string enableLogAnswer = Console.ReadLine();
                     if (enableLogAnswer != "y" && enableLogAnswer != "n") continue;
                     if (enableLogAnswer == "y")
@@ -117,7 +142,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Wrong address. Please use the correct address.");
                     Console.ResetColor();
-                    Environment.Exit(0);
+                    Environment.Exit(-1);
                 }
                 else
                 {
@@ -137,7 +162,7 @@ namespace p2t
                         Console.WriteLine("Error parsing argument -l");
                         Console.WriteLine(" Wrong packet payload size.");
                         Console.ResetColor();
-                        Environment.Exit(0);
+                        Environment.Exit(-1);
                     }
                 }
 
@@ -154,7 +179,7 @@ namespace p2t
                         Console.WriteLine("Error parsing argument -c");
                         Console.WriteLine(" Wrong number of ping echo requests.");
                         Console.ResetColor();
-                        Environment.Exit(0);
+                        Environment.Exit(-1);
                     }
                 }
 
@@ -171,7 +196,7 @@ namespace p2t
                         Console.WriteLine("Error parsing argument -w");
                         Console.WriteLine(" Wrong timeout.");
                         Console.ResetColor();
-                        Environment.Exit(0);
+                        Environment.Exit(-1);
                     }
                 }
 
@@ -188,7 +213,7 @@ namespace p2t
                         Console.WriteLine("Error parsing argument -i");
                         Console.WriteLine(" Wrong RTT interval.");
                         Console.ResetColor();
-                        Environment.Exit(0);
+                        Environment.Exit(-1);
                     }
                 }
 
@@ -198,7 +223,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Telegram Bot access token and Telegram Chat ID are not defined! Please define them using -tt and -tc arguments.");
                     Console.ResetColor();
-                    Environment.Exit(0);
+                    Environment.Exit(-1);
                 }
 
                 if (!string.IsNullOrEmpty(arguments.Tt) & string.IsNullOrEmpty(arguments.Tc))
@@ -207,7 +232,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Telegram Chat ID is not defined! Please define it using -tc argument.");
                     Console.ResetColor();
-                    Environment.Exit(0);
+                    Environment.Exit(-1);
                 }
 
                 if (!string.IsNullOrEmpty(arguments.Tc) & string.IsNullOrEmpty(arguments.Tt))
@@ -216,7 +241,7 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Telegram Bot access token is not defined! Please define it using -tt argument.");
                     Console.ResetColor();
-                    Environment.Exit(0);
+                    Environment.Exit(-1);
                 }
 
                 if ((arguments.Ta || arguments.Te) & (string.IsNullOrEmpty(arguments.Tt) || string.IsNullOrEmpty(arguments.Tc)))
@@ -225,13 +250,14 @@ namespace p2t
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Telegram Bot access token or Telegram Chat ID is not defined! Please define them using -tt and -tc arguments.");
                     Console.ResetColor();
-                    Environment.Exit(0);
+                    Environment.Exit(-1);
                 }
                 
                 CommandLineArguments.DoNotFragment = arguments.F;
                 CommandLineArguments.FollowTheName = arguments.Follow;
                 CommandLineArguments.LogEnabled = arguments.Log;
-                CommandLineArguments.AddDate = arguments.D;
+                CommandLineArguments.ErrorsOnly = arguments.E;
+                CommandLineArguments.NoTrace = arguments.Notrace;
 
                 if (!string.IsNullOrEmpty(arguments.Tt) & !string.IsNullOrEmpty(arguments.Tc))
                 {
@@ -257,33 +283,21 @@ namespace p2t
             //logic: if address is IP address - continue pinging using the IP address;
             //       if address is name - try to resolve it to IP address and continue pinging using the first IP address from the resolved array of IP's;
             //       if both unsuccessful - terminate the program with the error code -1
-            bool addressIsIp = ValidateAddress.Ip(CommandLineArguments.Address);
-
-            if (addressIsIp)
+            if (ValidateAddress.ValidateIp(CommandLineArguments.Address))
             {
-                Variables.Address = CommandLineArguments.Address;
+                GlobalVariables.OriginalAddress = CommandLineArguments.Address;
+                GlobalVariables.Address = CommandLineArguments.Address;
                 //disable FollowTheName option and set hostname to empty because using an ip address
                 CommandLineArguments.FollowTheName = false;
-                Variables.HostName = "";
+                CommandLineArguments.IsAddress = true;
             }
             else
             {
-                bool addressIsHostName = ValidateAddress.HostName(CommandLineArguments.Address);
-
-                if (addressIsHostName)
+                if (ValidateAddress.ValidateHostName(CommandLineArguments.Address))
                 {
-                    Variables.Address = CommandLineArguments.Address;
-                    Variables.HostName = CommandLineArguments.Address;
-
-                    //change the global input address (from Command Line arguments) to the ip address => do not allow the ping module to resolve the hostname to an ip address
-                    if (!CommandLineArguments.FollowTheName)
-                    {
-                        string singleIp = ResolveHostname.GetSingleIp(CommandLineArguments.Address);
-                        if (!string.IsNullOrEmpty(singleIp))
-                        {
-                            Variables.Address = singleIp;
-                        }
-                    }
+                    GlobalVariables.OriginalAddress = CommandLineArguments.Address;
+                    GlobalVariables.AddressHostName = CommandLineArguments.Address;
+                    GlobalVariables.Address = ValidateAddress.GetIp(CommandLineArguments.Address);
                 }
                 else
                 {
@@ -306,11 +320,15 @@ namespace p2t
 
             Result();
             Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
+
+            if (_manualMode)
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey(true);
+            }
         }
 
-    private static void DisplayHelp()
+        private static void DisplayHelp()
         {
             System.Reflection.Assembly assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly();
 
@@ -325,6 +343,8 @@ namespace p2t
             Console.WriteLine("    -i ms     Interval between RTT in ms, optional. Default is 500 ms.");
             Console.WriteLine("    -f        Do not fragment. The default is false (disabled).");
             Console.WriteLine("    -d        Add date to each ping output. The default is false (disabled).");
+            Console.WriteLine("    -e        Errors only. Displays and logs only ping errors. The default is false (disabled).");
+            Console.WriteLine("    -notrace  Disable trace route on ping error. The default is false (disabled).");
             Console.WriteLine("    -log      Write output to log file.");
             Console.WriteLine("    -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.");
             Console.WriteLine("              The name will resolve to the IP address at every ping. The default is false (disabled).");
@@ -399,7 +419,7 @@ namespace p2t
                 return;
             }
 
-            string textOther = $"Packets: sent - {Statistic.PingSuccess + Statistic.PingLost}; Lost - {Statistic.PingLost} ({(Statistic.PingLost * 100) / (Statistic.PingSuccess + Statistic.PingLost)}%); Traceroutes: {Statistic.TraceRoutes}; Avg.RTT: {Statistic.RttSumm / Statistic.PingSuccess} ms; Unique IP addresses: {Statistic.GetIp.Count}";
+            string textOther = $"Packets: sent - {Statistic.PingSuccess + Statistic.PingLost}; Lost - {Statistic.PingLost} ({(Statistic.PingLost * 100) / (Statistic.PingSuccess + Statistic.PingLost)}%); Traceroutes: {Statistic.TraceRoutes}; Avg.RTT: {Statistic.RttSumm / Statistic.PingSuccess} ms; Unique IP addresses: {Statistic.GetUniqueIpAddresses.Count}";
             Console.WriteLine(textOther);
             writeLog.Append(textOther);
 
@@ -413,9 +433,14 @@ namespace p2t
                 string footerText = "";
                 footerText += "Used IP addresses: ";
                 
-                foreach (string ipAddress in Statistic.GetIp)
+                foreach (string ipAddress in Statistic.GetUniqueIpAddresses)
                 {
-                   footerText += ipAddress + " ";
+                    footerText += ipAddress;
+
+                    if (Statistic.GetUniqueIpAddresses.Count > 1 & (Statistic.GetUniqueIpAddresses.IndexOf(ipAddress) + 1) != Statistic.GetUniqueIpAddresses.Count)
+                    {
+                        footerText += ", ";
+                    }
                 }
 
                 Console.WriteLine(footerText);
@@ -435,6 +460,7 @@ namespace p2t
             {
                 case CtrlTypes.CtrlCEvent:
                     Ping.Cancel = true;
+                    Traceroute.Cancel = true;
                     break;
 
                 case CtrlTypes.CtrlBreakEvent:
@@ -443,16 +469,19 @@ namespace p2t
 
                 case CtrlTypes.CtrlCloseEvent:
                     Ping.Cancel = true;
+                    Traceroute.Cancel = true;
                     Result();
                     break;
 
                 case CtrlTypes.CtrlLogoffEvent:
                     Ping.Cancel = true;
+                    Traceroute.Cancel = true;
                     Result();
                     break;
 
                 case CtrlTypes.CtrlShutdownEvent:
                     Ping.Cancel = true;
+                    Traceroute.Cancel = true;
                     break;
             }
 

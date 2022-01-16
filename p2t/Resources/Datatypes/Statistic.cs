@@ -4,7 +4,7 @@ namespace p2t.Resources.DataTypes
 {
     class Statistic
     {
-        private List<string> IpList = new List<string>();
+        private List<string> _uniqueIpAddressesList = new List<string>();
         public int PingSuccess { get; set; }
         public int PingLost { get; set; }
         public long RttSumm { get; set; }
@@ -13,12 +13,12 @@ namespace p2t.Resources.DataTypes
         {
             set
             {
-                if (!IpList.Contains(value))
+                if (!_uniqueIpAddressesList.Contains(value))
                 {
-                    IpList.Add(value);
+                    _uniqueIpAddressesList.Add(value);
                 }
             }
         }
-        public List<string> GetIp => IpList;
+        public List<string> GetUniqueIpAddresses => _uniqueIpAddressesList;
     }
 }

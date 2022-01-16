@@ -16,6 +16,8 @@ Runs in interactive mode if started without arguments.
         -i ms     Interval between RTT in ms, optional. Default is 500 ms.
         -f        Do not fragment. The default is false (disabled).
         -d        Add date to each ping output. The default is false (disabled).
+        -e        Errors only. Displays and logs only ping errors. The default is false (disabled).
+        -notrace  Disable trace route on ping error. The default is false (disabled).
         -log      Write output to log file.
         -follow   Follow the hostname. Do not fix IP address when resolving a name for the first time.
                   The name will resolve to the IP address at every ping. The default is false (disabled).
@@ -42,61 +44,37 @@ Runs in interactive mode if started without arguments.
 
 Command:
 
-    >p2t.exe www.google.com -l 1400 -c 100 -i 2000 -log -follow -d -tt 1183030956:AAG3-S4-v4NowRpyIr1KNgKnQZsobGyCa-A -tc 374137042 -te
+    >p2t.exe www.google.com -l 1400 -c 5 -i 2000 -log -follow -d -tt 1183030956:AAG3-S4-v4NowRpyIr1KNgKnQZsobGyCa-A -tc 374137042 -te
 
 Console output:
 
-    Using the following file to log: C:\Temp\p2t_06-04-2021_00-50-04_www.google.com.log
+    Using the following file to log: C:\Temp\p2t_16-01-2022_20-59-11_www.google.com.log
     
-    p2t.exe v1.1.0.0
+    p2t.exe v1.2.0.0
     Ping started. Used options:
-    Host Name: www.google.com
-    IP Address: www.google.com
-    Packet Size: 1400 bytes
-    Ping Count: 100
-    Timeout: 2000 ms
-    Interval: 2000 ms
-    Don't Fragment: False
-    Follow the Name: True
-    Add Date to each ping output: True
-    Using Telegram bot to send errors: True
-    Telegram bot channel id: 374137042
-    Telegram, only send errors: True
+     Address: www.google.com
+     Is address: False
+     Packet Size: 1400 bytes
+     Ping Count: 5
+     Timeout: 2000 ms
+     Interval: 2000 ms
+     Don't Fragment: False
+     Follow the Name: True
+     Add date to each ping output: False
+     Errors only: False
+     No trace: False
+     Using Telegram bot to send errors: True
+     Telegram bot channel id: 374137042
+     Telegram, only send errors: True
     
-    [06-04-2021 00:50:04.794]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=31ms  TTL=113
-    [06-04-2021 00:50:06.827]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
-    [06-04-2021 00:50:08.861]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
-    [06-04-2021 00:50:10.894]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
-    [06-04-2021 00:50:12.927]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
-    [06-04-2021 00:50:14.960]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
-    [06-04-2021 00:50:16.993]  Reply from: 216.58.209.4  fragment=True  bytes=1400  time=30ms  TTL=113
+    [20:59:11.737]  Reply from: 142.250.185.68  fragment=True  bytes=1400  time=44ms  TTL=54
+    [20:59:13.784]  Reply from: 142.250.185.68  fragment=True  bytes=1400  time=42ms  TTL=54
+    [20:59:15.836]  Reply from: 142.250.185.68  fragment=True  bytes=1400  time=42ms  TTL=54
+    [20:59:17.883]  Reply from: 142.250.185.68  fragment=True  bytes=1400  time=42ms  TTL=54
+    [20:59:19.930]  Reply from: 142.250.185.68  fragment=True  bytes=1400  time=42ms  TTL=54
     
-    Packets: sent - 7; Lost - 0 (0%); Traceroutes: 0; Avg.RTT: 30 ms; Unique IP addresses: 1
-    Used IP addresses: 216.58.209.4
-    
-    Press any key to exit...
-	
-Telegram output:	
-
-    vSoul_bot, [6.04.2021 at 00:50:04]:
-    p2t.exe v1.1.0.0
-    Ping started. Used options:
-    Host Name: www.google.com
-    IP Address: www.google.com
-    Packet Size: 1400 bytes
-    Ping Count: 100
-    Timeout: 2000 ms
-    Interval: 2000 ms
-    Don't Fragment: False
-    Follow the Name: True
-    Add Date to each ping output: True
-    Using Telegram bot to send errors: True
-    Telegram bot channel id: 374137042
-    Telegram, only send errors: True
-    
-    Packets: sent - 7; Lost - 0 (0%); Traceroutes: 0; Avg.RTT: 30 ms; Unique IP addresses: 1
-    
-    Used IP addresses: 216.58.209.4
+    Packets: sent - 5; Lost - 0 (0%); Traceroutes: 0; Avg.RTT: 42 ms; Unique IP addresses: 1
+    Used IP addresses: 142.250.185.68
 
 **Launched Interactively:**
 
@@ -111,33 +89,52 @@ Console output:
     
     Enter the IP address or the hostname to ping: www.google.com
     Enter the interval between RTT in ms (default is 500 ms):
-    Do you want to log ping to file (y/n)?: n
+    Enable trace route on ping fails? (y/n)?: y
+    Follow the name? (y/n)?: y
+    Do you want to log output to file (y/n)?: y
+    Using the following file to log: C:\Temp\p2t_16-01-2022_21-02-00_www.google.com.log
     
-    p2t.exe v1.1.0.0
+    p2t.exe v1.2.0.0
     Ping started. Used options:
-    Host Name: www.google.com
-    IP Address: 216.58.215.68
-    Packet Size: 32 bytes
-    Ping Count: infinite
-    Timeout: 2000 ms
-    Interval: 500 ms
-    Don't Fragment: False
-    Follow the Name: False
-    Add Date to each ping output: False
-    Using Telegram bot to send errors: False
+     Address: www.google.com
+     Is address: False
+     Packet Size: 32 bytes
+     Ping Count: infinite
+     Timeout: 2000 ms
+     Interval: 500 ms
+     Don't Fragment: False
+     Follow the Name: True
+     Add date to each ping output: False
+     Errors only: False
+     No trace: False
+     Using Telegram bot to send errors: False
     
-    [00:56:02.105]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=32ms  TTL=113
-    [00:56:02.639]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=31ms  TTL=113
-    [00:56:03.172]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=30ms  TTL=113
-    [00:56:03.704]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=31ms  TTL=113
-    [00:56:04.236]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=31ms  TTL=113
-    [00:56:04.769]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=30ms  TTL=113
-    [00:56:05.301]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=30ms  TTL=113
-    [00:56:05.833]  Reply from: 216.58.215.68  fragment=True  bytes=32  time=31ms  TTL=113
+    [21:02:36.100]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:36.647]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:37.194]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:37.741]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:38.287]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:38.834]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:39.384]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:39.931]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:40.478]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:41.024]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=43ms  TTL=54
+    [21:02:41.571]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
+    [21:02:42.118]  Reply from: 142.250.185.68  fragment=True  bytes=32  time=42ms  TTL=54
     
-    Packets: sent - 8; Lost - 0 (0%); Traceroutes: 0; Avg.RTT: 30 ms; Unique IP addresses: 0
+    Packets: sent - 12; Lost - 0 (0%); Traceroutes: 0; Avg.RTT: 42 ms; Unique IP addresses: 1
+    Used IP addresses: 142.250.185.68
     
     Press any key to exit...
+
+## **v1.2.0.0**
+
+Added -notrace argument to disable trace routes if ping error
+Added -e argument to display or log ping errors only
+Improved Follow the hostname mode
+Fixed bug with the trace route interruption
+Removed "Press any key" on exit from the p2t.exe if was launched in interactive mode
+
 
 ## **v1.1.0.0**
 
@@ -146,7 +143,7 @@ Switched to .NET Framework 4.6
 
 ## **v1.0.0.1**
 
-Added -d switch to add date to each ping output
+Added -d argument to add date to each ping output
 
 ## **v1.0.0.0**
 

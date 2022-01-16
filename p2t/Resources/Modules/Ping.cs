@@ -8,6 +8,9 @@ namespace p2t.Resources.Modules
     class Ping
     {
         public static bool Cancel = false;
+        private static string _ipAddress;
+        private static string _originalAddress;
+        private static bool _isAddress;
         private static int _packetSize;
         private static int _pingCount;
         private static int _pingTimeout;
@@ -15,6 +18,8 @@ namespace p2t.Resources.Modules
         private static bool _dontFragmentFlag;
         private static bool _followTheName;
         private static bool _addDate;
+        private static bool _noTrace;
+        private static bool _errorsOnly;
         private static bool _usingTelegram;
         private static bool _telegramSendAll;
         private static bool _telegramSendErrors;
@@ -24,6 +29,9 @@ namespace p2t.Resources.Modules
         public Ping(CommandLineArguments commandLineArguments)
         {
             //init variables
+            _ipAddress = P2T.GlobalVariables.Address;
+            _originalAddress = P2T.GlobalVariables.OriginalAddress;
+            _isAddress = commandLineArguments.IsAddress;
             _packetSize = commandLineArguments.PacketSize;
             _pingCount = commandLineArguments.PingCount;
             _pingTimeout = commandLineArguments.PingTimeout;
@@ -31,6 +39,8 @@ namespace p2t.Resources.Modules
             _dontFragmentFlag = commandLineArguments.DoNotFragment;
             _followTheName = commandLineArguments.FollowTheName;
             _addDate = commandLineArguments.AddDate;
+            _errorsOnly = commandLineArguments.ErrorsOnly;
+            _noTrace = commandLineArguments.NoTrace;
             _usingTelegram = commandLineArguments.UsingTelegram;
             _telegramBotToken = commandLineArguments.TelegramBotToken;
             _telegramChatId = commandLineArguments.TelegramChatId;
@@ -47,31 +57,40 @@ namespace p2t.Resources.Modules
 
             displayHeader += "p2t.exe v" + assemblyVersion.GetName().Version + "\n";
             displayHeader += "Ping started. Used options:" + "\n";
-            displayHeader += "Host Name: " + P2T.Variables.HostName + "\n";
-            displayHeader += "IP Address: " + P2T.Variables.Address + "\n";
-            displayHeader += "Packet Size: " + _packetSize + " bytes" + "\n";
-            displayHeader += "Ping Count: " + pingCountText + "\n";
-            displayHeader += "Timeout: " + _pingTimeout + " ms" + "\n";
-            displayHeader += "Interval: " + _pingRttInterval + " ms" + "\n";
-            displayHeader += "Don't Fragment: " + _dontFragmentFlag + "\n";
-            displayHeader += "Follow the Name: " + _followTheName + "\n";
-            displayHeader += "Add Date to each ping output: " + _addDate + "\n";
-            displayHeader += "Using Telegram bot to send errors: " + _usingTelegram + "\n";
+            displayHeader += " Address: " + _originalAddress + "\n";
+            displayHeader += " Is address: " + _isAddress + "\n";
+            displayHeader += " Packet Size: " + _packetSize + " bytes" + "\n";
+            displayHeader += " Ping Count: " + pingCountText + "\n";
+            displayHeader += " Timeout: " + _pingTimeout + " ms" + "\n";
+            displayHeader += " Interval: " + _pingRttInterval + " ms" + "\n";
+            displayHeader += " Don't Fragment: " + _dontFragmentFlag + "\n";
+            displayHeader += " Follow the Name: " + _followTheName + "\n";
+            displayHeader += " Add date to each ping output: " + _addDate + "\n";
+            displayHeader += " Errors only: " + _errorsOnly + "\n";
+            displayHeader += " No trace: " + _noTrace + "\n";
+            displayHeader += " Using Telegram bot to send errors: " + _usingTelegram + "\n";
+            
+            if (_errorsOnly)
+            {
+                displayHeader += "\n";
+                displayHeader += " *Error mode is enabled. Only errors will be displayed and logged!" + "\n";
+            }
+
             //if (!string.IsNullOrEmpty(_telegramBotToken))
             //{
             //    displayHeader += "Telegram bot token: " + _telegramBotToken + "\n";
             //}
             if (!string.IsNullOrEmpty(_telegramChatId))
             {
-                displayHeader += "Telegram bot channel id: " + _telegramChatId + "\n";
+                displayHeader += " Telegram bot channel id: " + _telegramChatId + "\n";
             }
             if (_telegramSendAll)
             {
-                displayHeader += "Telegram, send all: " + _telegramSendAll + "\n";
+                displayHeader += " Telegram, send all: " + _telegramSendAll + "\n";
             }
             if (_telegramSendErrors & _usingTelegram)
             {
-                displayHeader += "Telegram, only send errors: " + _telegramSendErrors + "\n";
+                displayHeader += " Telegram, only send errors: " + _telegramSendErrors + "\n";
             }
             //displayHeader += ("\n");
 
@@ -122,13 +141,20 @@ namespace p2t.Resources.Modules
             // before it is destroyed, and the data packet
             // can be fragmented.
             var pingOptions = new PingOptions(32, _dontFragmentFlag);
-
             var pingSender = new System.Net.NetworkInformation.Ping();
 
             // Send the request.
             try
             {
-                var pingReply = pingSender.Send(P2T.Variables.Address, timeoutOption, sizeOption, pingOptions);
+                if (_followTheName & !_isAddress)
+                {
+                    if (!string.IsNullOrEmpty(ValidateAddress.GetIp(P2T.GlobalVariables.AddressHostName)))
+                    {
+                        _ipAddress = ValidateAddress.GetIp(P2T.GlobalVariables.AddressHostName);
+                    }
+                }
+
+                var pingReply = pingSender.Send(_ipAddress, timeoutOption, sizeOption, pingOptions);
 
                 //Console.WriteLine(reply.Status.ToString());
 
@@ -141,6 +167,11 @@ namespace p2t.Resources.Modules
                     Console.ResetColor();
                     WriteLog.Append(pingPacketIsToBigMessage);
 
+                    if (_followTheName)
+                    {
+                        P2T.Statistic.AddIp = _ipAddress;
+                    }
+
                     if (_telegramSendAll || _telegramSendErrors)
                     {
                         telegram.SendMessage(pingPacketIsToBigMessage);
@@ -152,20 +183,27 @@ namespace p2t.Resources.Modules
                 if (pingReply != null && pingReply.Status == IPStatus.TimedOut)
                 {
                     P2T.Statistic.PingLost++;
-                    string pingLostText = (_addDate ? $"[{DateTime.Now:(dd-MM-yyyy HH:mm:ss.fff)}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Ping " + pingReply.Address + " timeout. Start trace routing.";
+                    string pingLostText = (_addDate ? $"[{DateTime.Now:(dd-MM-yyyy HH:mm:ss.fff)}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Ping " + _ipAddress + " timeout.";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(pingLostText);
                     Console.ResetColor();
                     WriteLog.Append(pingLostText);
 
-                    P2T.Statistic.TraceRoutes++;
-                    Traceroute startTraceroute = new Traceroute();
+                    if (!_noTrace)
+                    {
+                        P2T.Statistic.TraceRoutes++;
+                        Traceroute startTraceroute = new Traceroute();
 
-                    //Start traceroute if ping error
-                    startTraceroute.StartTraceroute(timeoutOption);
+                        //Start traceroute if ping error
+                        startTraceroute.StartTraceroute(_ipAddress, timeoutOption);
+                    }
+
+                    if (_followTheName)
+                    {
+                        P2T.Statistic.AddIp = _ipAddress;
+                    }
 
                     //Console.WriteLine(reply.Status.ToString());
-
                     if (_telegramSendAll || _telegramSendErrors)
                     {
                         telegram.SendMessage(pingLostText);
@@ -177,20 +215,27 @@ namespace p2t.Resources.Modules
                 if (pingReply != null && pingReply.Status != IPStatus.Success)
                 {
                     P2T.Statistic.PingLost++;
-                    string pingLostText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + "Ping " + pingReply.Address + " is lost. Start tracert.";
+                    string pingLostText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + "Ping " + _ipAddress + " is lost.";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(pingLostText);
                     Console.ResetColor();
                     WriteLog.Append(pingLostText);
 
-                    P2T.Statistic.TraceRoutes++;
-                    Traceroute startTraceroute = new Traceroute();
+                    if (!_noTrace)
+                    {
+                        P2T.Statistic.TraceRoutes++;
+                        Traceroute startTraceroute = new Traceroute();
 
-                    //Start traceroute if ping error
-                    startTraceroute.StartTraceroute(timeoutOption);
+                        //Start traceroute if ping error
+                        startTraceroute.StartTraceroute(_ipAddress, timeoutOption);
+                    }
+
+                    if (_followTheName)
+                    {
+                        P2T.Statistic.AddIp = _ipAddress;
+                    }
 
                     //Console.WriteLine(reply.Status.ToString());
-
                     if (_telegramSendAll || _telegramSendErrors)
                     {
                         telegram.SendMessage(pingLostText);
@@ -216,12 +261,16 @@ namespace p2t.Resources.Modules
 
                     if (_followTheName)
                     {
-                        P2T.Statistic.AddIp = pingReply.Address.ToString();
+                        P2T.Statistic.AddIp = _ipAddress;
                     }
 
-                    string pingSuccessText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + "  Reply from: " + pingReply.Address + "  fragment=" + (!_dontFragmentFlag).ToString() + "  bytes=" + _packetSize.ToString() + "  time=" + pingReply.RoundtripTime.ToString() + "ms  TTL=" + ttl;
-                    Console.WriteLine(pingSuccessText);
-                    WriteLog.Append(pingSuccessText);
+                    string pingSuccessText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + "  Reply from: " + _ipAddress + "  fragment=" + (!_dontFragmentFlag).ToString() + "  bytes=" + _packetSize.ToString() + "  time=" + pingReply.RoundtripTime.ToString() + "ms  TTL=" + ttl;
+                    
+                    if (!_errorsOnly)
+                    {
+                        Console.WriteLine(pingSuccessText);
+                        WriteLog.Append(pingSuccessText);
+                    }
 
                     if (_telegramSendAll)
                     {
@@ -232,22 +281,22 @@ namespace p2t.Resources.Modules
                 }
 
                 P2T.Statistic.PingLost++;
-                string гnknownErrorText = "An unknown error occurred...";
+                string unknownErrorText = "An unknown error occurred...";
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(гnknownErrorText);
+                Console.WriteLine(unknownErrorText);
                 Console.ResetColor();
-                WriteLog.Append(гnknownErrorText);
+                WriteLog.Append(unknownErrorText);
 
                 if (_telegramSendAll || _telegramSendErrors)
                 {
-                    telegram.SendMessage(гnknownErrorText);
+                    telegram.SendMessage(unknownErrorText);
                 }
 
             }
             catch (PingException pingException) when (pingException.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.HostNotFound)
             {
                 //Console.WriteLine(socketException.ToString());
-                string textHostNotFound = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Can't resolve the hostname '" + P2T.Variables.Address + "' to an IP address.";
+                string textHostNotFound = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Can't resolve the hostname '" + _ipAddress + "' to an IP address.";
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(textHostNotFound);
                 Console.ResetColor();
