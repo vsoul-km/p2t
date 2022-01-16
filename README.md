@@ -130,9 +130,13 @@ Console output:
 ## **v1.2.0.0**
 
 Added -notrace argument to disable trace routes if ping error
+
 Added -e argument to display or log ping errors only
+
 Improved Follow the hostname mode
+
 Fixed bug with the trace route interruption
+
 Removed "Press any key" on exit from the p2t.exe if was launched in interactive mode
 
 
