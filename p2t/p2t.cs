@@ -256,6 +256,7 @@ namespace p2t
                 CommandLineArguments.DoNotFragment = arguments.F;
                 CommandLineArguments.FollowTheName = arguments.Follow;
                 CommandLineArguments.LogEnabled = arguments.Log;
+                CommandLineArguments.AddDate = arguments.D;
                 CommandLineArguments.ErrorsOnly = arguments.E;
                 CommandLineArguments.NoTrace = arguments.Notrace;
 

@@ -127,6 +127,10 @@ Console output:
     
     Press any key to exit...
 
+## **v1.2.0.1**
+
+Fixed problem with -d argument
+
 ## **v1.2.0.0**
 
 Added -notrace argument to disable trace routes if ping error
