@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using p2t.Resources.DataTypes;
@@ -108,8 +109,18 @@ namespace p2t.Resources.Modules
             {
                 while (!Cancel)
                 {
+                    Stopwatch stopWatchPingDuration = new Stopwatch();
+
+                    stopWatchPingDuration.Start();
+
                     DoPing();
-                    System.Threading.Thread.Sleep(_pingRttInterval);
+
+                    stopWatchPingDuration.Stop();
+
+                    if ((int)stopWatchPingDuration.ElapsedMilliseconds < _pingRttInterval)
+                    {
+                        System.Threading.Thread.Sleep(_pingRttInterval - (int)stopWatchPingDuration.ElapsedMilliseconds);
+                    }
                 }
             }
             else
@@ -120,8 +131,19 @@ namespace p2t.Resources.Modules
                     {
                         break;
                     }
+
+                    Stopwatch stopWatchPingDuration = new Stopwatch();
+
+                    stopWatchPingDuration.Start();
+
                     DoPing();
-                    System.Threading.Thread.Sleep(_pingRttInterval);
+
+                    stopWatchPingDuration.Stop();
+
+                    if ((int)stopWatchPingDuration.ElapsedMilliseconds < _pingRttInterval)
+                    {
+                        System.Threading.Thread.Sleep(_pingRttInterval - (int)stopWatchPingDuration.ElapsedMilliseconds);
+                    }
                 }
             }
         }
@@ -183,7 +205,7 @@ namespace p2t.Resources.Modules
                 if (pingReply != null && pingReply.Status == IPStatus.TimedOut)
                 {
                     P2T.Statistic.PingLost++;
-                    string pingLostText = (_addDate ? $"[{DateTime.Now:(dd-MM-yyyy HH:mm:ss.fff)}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Ping " + _ipAddress + " timeout.";
+                    string pingLostText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Ping " + _ipAddress + " timeout.";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(pingLostText);
                     Console.ResetColor();
@@ -212,10 +234,10 @@ namespace p2t.Resources.Modules
                     return;
                 }
 
-                if (pingReply != null && pingReply.Status != IPStatus.Success)
+                if (pingReply != null && pingReply.Status != IPStatus.TimedOut && pingReply.Status != IPStatus.Success)
                 {
                     P2T.Statistic.PingLost++;
-                    string pingLostText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + "Ping " + _ipAddress + " is lost.";
+                    string pingLostText = (_addDate ? $"[{DateTime.Now:dd-MM-yyyy HH:mm:ss.fff}]" : $"[{DateTime.Now:HH:mm:ss.fff}]") + " Ping " + _ipAddress + " timeout (" + pingReply.Status.ToString() + ").";
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(pingLostText);
                     Console.ResetColor();
