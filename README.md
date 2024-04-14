@@ -1,6 +1,6 @@
 
 # p2t
-Advanced ping command line utility for Windows (uses .NET Framework 4.6)
+Advanced ping command line utility for Windows (uses .NET Framework)
 
 .NET 4.7.2 command line utility to ping hosts by IP/HostName (like standard Windows ping) and runs traceroute if ping fails.
 Could send an output to Telegram.
