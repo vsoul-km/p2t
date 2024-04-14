@@ -43,7 +43,7 @@
     <Compile Include="p2t.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Datatypes\CommandLineArguments.cs" />
-    <Compile Include="Resources\Datatypes\Statistic.cs" />
+    <Compile Include="Resources\Datatypes\Statistics.cs" />
     <Compile Include="Resources\Datatypes\GlobalVariables.cs" />
     <Compile Include="Resources\Modules\InputArguments.cs" />
     <Compile Include="Resources\Modules\Ping.cs" />
@@ -51,7 +51,7 @@
     <Compile Include="Resources\Modules\Telegram.cs" />
     <Compile Include="Resources\Modules\Traceroute.cs" />
     <Compile Include="Resources\Modules\UtilityArguments.cs" />
-    <Compile Include="Resources\Modules\ValidateAddress.cs" />
+    <Compile Include="Resources\Modules\AddressValidator.cs" />
     <Compile Include="Resources\Modules\WriteLog.cs" />
   </ItemGroup>
   <ItemGroup>

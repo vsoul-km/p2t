@@ -3,7 +3,7 @@ using System.Net;
 
 namespace p2t.Resources.Modules
 {
-    public static class ValidateAddress
+    public static class AddressValidator
     {
         public static bool ValidateIp(string addressToCheck)
         {

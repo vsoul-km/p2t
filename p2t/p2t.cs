@@ -16,7 +16,7 @@ namespace p2t
         public delegate bool HandlerRoutine(CtrlTypes ctrlType);
         public static GlobalVariables GlobalVariables = new GlobalVariables();
         public static CommandLineArguments CommandLineArguments = new CommandLineArguments();
-        public static Statistic Statistic = new Statistic();
+        public static Statistics Statistics = new Statistics();
         private static bool _manualMode;
 
         public enum CtrlTypes
@@ -56,12 +56,15 @@ namespace p2t
                         continue;
                     }
 
-                    if (!ValidateAddress.ValidateIp(pingAddress) & !ValidateAddress.ValidateHostName(pingAddress))
+                    if (!AddressValidator.ValidateIp(pingAddress))
                     {
+                        if (!AddressValidator.ValidateHostName(pingAddress))
+                        {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("Cannot resolve the address to IP address.");
                             Console.ResetColor();
                             continue;
+                        }
                     }
 
                     GlobalVariables.OriginalAddress = pingAddress;
@@ -91,37 +94,64 @@ namespace p2t
 
                 while (true)
                 {
-                    Console.Write("Enable trace route on ping fails? (y/n)?: ");
+                    Console.Write("Enable trace route on ping fails (no by default) (y/n)?: ");
                     string enableTrace = Console.ReadLine();
+                    
+                    if (enableTrace == "")
+                    {
+                        CommandLineArguments.NoTrace = true;
+                        break;
+                    }
+
                     if (enableTrace != "y" && enableTrace != "n") continue;
+
                     if (enableTrace == "n")
                     {
                         CommandLineArguments.NoTrace = true;
                     }
+
                     break;
                 }
 
                 while (true)
                 {
-                    Console.Write("Follow the name? (y/n)?: ");
+                    Console.Write("Follow the name (no by default) (y/n)?: ");
                     string enablFollowTheName = Console.ReadLine();
+
+                    if (enablFollowTheName == "")
+                    {
+                        CommandLineArguments.NoTrace = true;
+                        break;
+                    }
+
                     if (enablFollowTheName != "y" && enablFollowTheName != "n") continue;
+                    
                     if (enablFollowTheName == "y")
                     {
                         CommandLineArguments.FollowTheName = true;
                     }
+
                     break;
                 }
 
                 while (true)
                 {
-                    Console.Write("Do you want to log output to file (y/n)?: ");
+                    Console.Write("Do you want to log output to file (no by default) (y/n)?: ");
                     string enableLogAnswer = Console.ReadLine();
+
+                    if (enableLogAnswer == "")
+                    {
+                        CommandLineArguments.NoTrace = true;
+                        break;
+                    }
+
                     if (enableLogAnswer != "y" && enableLogAnswer != "n") continue;
+
                     if (enableLogAnswer == "y")
                     {
                         CommandLineArguments.LogEnabled = true;
                     }
+
                     break;
                 }
             }
@@ -284,7 +314,7 @@ namespace p2t
             //logic: if address is IP address - continue pinging using the IP address;
             //       if address is name - try to resolve it to IP address and continue pinging using the first IP address from the resolved array of IP's;
             //       if both unsuccessful - terminate the program with the error code -1
-            if (ValidateAddress.ValidateIp(CommandLineArguments.Address))
+            if (AddressValidator.ValidateIp(CommandLineArguments.Address))
             {
                 GlobalVariables.OriginalAddress = CommandLineArguments.Address;
                 GlobalVariables.Address = CommandLineArguments.Address;
@@ -294,11 +324,11 @@ namespace p2t
             }
             else
             {
-                if (ValidateAddress.ValidateHostName(CommandLineArguments.Address))
+                if (AddressValidator.ValidateHostName(CommandLineArguments.Address))
                 {
                     GlobalVariables.OriginalAddress = CommandLineArguments.Address;
                     GlobalVariables.AddressHostName = CommandLineArguments.Address;
-                    GlobalVariables.Address = ValidateAddress.GetIp(CommandLineArguments.Address);
+                    GlobalVariables.Address = AddressValidator.GetIp(CommandLineArguments.Address);
                 }
                 else
                 {
@@ -376,7 +406,7 @@ namespace p2t
             Console.WriteLine();
             writeLog.Append("");
 
-            if (Statistic.PingSuccess == 0 && Statistic.PingLost == 0 && Statistic.TraceRoutes == 0)
+            if (Statistics.PingSuccess == 0 && Statistics.PingLost == 0 && Statistics.TraceRoutes == 0)
             {
                 string textAllLost = "Packets: sent - 0; Lost - 0%; Traceroutes: 0; Avg.RTT: -- ms; Unique IP addresses: 0;";
                 Console.WriteLine(textAllLost);
@@ -392,9 +422,9 @@ namespace p2t
                 return;
             }
 
-            if (Statistic.PingSuccess == 0 && Statistic.TraceRoutes != 0)
+            if (Statistics.PingSuccess == 0 && Statistics.TraceRoutes != 0)
             {
-                string textTraceroutesOnly = $"Packets: sent - {Statistic.PingLost}; Lost - 100%; Traceroutes: {Statistic.TraceRoutes}; Avg.RTT: -- ms; Unique IP addresses: 0;";
+                string textTraceroutesOnly = $"Packets: sent - {Statistics.PingLost}; Lost - 100%; Traceroutes: {Statistics.TraceRoutes}; Avg.RTT: -- ms; Unique IP addresses: 0;";
                 Console.WriteLine(textTraceroutesOnly);
                 writeLog.Append(textTraceroutesOnly);
                 
@@ -406,9 +436,9 @@ namespace p2t
                 return;
             }
 
-            if (Statistic.PingSuccess == 0 && Statistic.PingLost != 0 && Statistic.TraceRoutes == 0)
+            if (Statistics.PingSuccess == 0 && Statistics.PingLost != 0 && Statistics.TraceRoutes == 0)
             {
-                string textLostOnly = $"Packets: sent - {Statistic.PingLost}, lost - 100%; Traceroutes: 0; Avg.RTT: -- ms; Unique IP addresses: 0;";
+                string textLostOnly = $"Packets: sent - {Statistics.PingLost}, lost - 100%; Traceroutes: 0; Avg.RTT: -- ms; Unique IP addresses: 0;";
                 Console.WriteLine(textLostOnly);
                 writeLog.Append(textLostOnly);
 
@@ -420,7 +450,7 @@ namespace p2t
                 return;
             }
 
-            string textOther = $"Packets: sent - {Statistic.PingSuccess + Statistic.PingLost}; Lost - {Statistic.PingLost} ({(Statistic.PingLost * 100) / (Statistic.PingSuccess + Statistic.PingLost)}%); Traceroutes: {Statistic.TraceRoutes}; Avg.RTT: {Statistic.RttSumm / Statistic.PingSuccess} ms; Unique IP addresses: {Statistic.GetUniqueIpAddresses.Count}";
+            string textOther = $"Packets: sent - {Statistics.PingSuccess + Statistics.PingLost}; Lost - {Statistics.PingLost} ({(Statistics.PingLost * 100) / (Statistics.PingSuccess + Statistics.PingLost)}%); Traceroutes: {Statistics.TraceRoutes}; Avg.RTT: {Statistics.RttSumm / Statistics.PingSuccess} ms; Unique IP addresses: {Statistics.GetUniqueIpAddresses.Count}";
             Console.WriteLine(textOther);
             writeLog.Append(textOther);
 
@@ -434,11 +464,11 @@ namespace p2t
                 string footerText = "";
                 footerText += "Used IP addresses: ";
                 
-                foreach (string ipAddress in Statistic.GetUniqueIpAddresses)
+                foreach (string ipAddress in Statistics.GetUniqueIpAddresses)
                 {
                     footerText += ipAddress;
 
-                    if (Statistic.GetUniqueIpAddresses.Count > 1 & (Statistic.GetUniqueIpAddresses.IndexOf(ipAddress) + 1) != Statistic.GetUniqueIpAddresses.Count)
+                    if (Statistics.GetUniqueIpAddresses.Count > 1 & (Statistics.GetUniqueIpAddresses.IndexOf(ipAddress) + 1) != Statistics.GetUniqueIpAddresses.Count)
                     {
                         footerText += ", ";
                     }

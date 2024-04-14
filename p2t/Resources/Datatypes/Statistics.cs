@@ -2,7 +2,7 @@
 
 namespace p2t.Resources.DataTypes
 {
-    class Statistic
+    class Statistics
     {
         private List<string> _uniqueIpAddressesList = new List<string>();
         public int PingSuccess { get; set; }
